@@ -1,59 +1,92 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "teamherowars41 Hub | CDID Jateng Edition",
-   LoadingTitle = "Menyiapkan Rute Jawa Tengah...",
+   Name = "teamherowars41 Hub | CDID FULL AUTO",
+   LoadingTitle = "Mengaktifkan Sistem Pengiriman Kilat...",
    LoadingSubtitle = "by teamherowars41",
 })
 
-local Tab = Window:CreateTab("Truck Job", 4483362458)
+local Tab = Window:CreateTab("Full Farm", 4483362458)
 
--- 1. AUTO MISSION FLY (TERBANG KE WAYPOINT)
+-- FITUR UTAMA: FULL AUTO FLY TO WAYPOINT
 Tab:CreateToggle({
-   Name = "Auto Fly to Waypoint (Truck Job)",
+   Name = "Aktifkan Full Auto Fly",
    CurrentValue = false,
    Callback = function(Value)
-      _G.AutoJob = Value
-      while _G.AutoJob do
+      _G.FullAuto = Value
+      
+      while _G.FullAuto do
          pcall(function()
-            local char = game.Players.LocalPlayer.Character
-            local veh = char.Humanoid.SeatPart.Parent -- Mendeteksi kendaraan
+            local player = game.Players.LocalPlayer
+            local character = player.Character
+            local vehicle = character.Humanoid.SeatPart.Parent
             
-            -- Mencari Waypoint tujuan dari sistem game CDID
-            local waypoint = workspace:FindFirstChild("JobWaypoint") or workspace:FindFirstChild("Waypoint")
-            
-            if veh and waypoint then
-               -- Terbang ke posisi waypoint dengan ketinggian 300 agar aman dari bangunan
-               local targetPos = waypoint.Position + Vector3.new(0, 300, 0)
-               veh:SetPrimaryPartCFrame(CFrame.new(veh.PrimaryPart.Position, targetPos))
-               veh.PrimaryPart.CFrame = veh.PrimaryPart.CFrame * CFrame.new(0, 0, -10)
+            -- Mencari Waypoint (Mencakup semua kemungkinan nama di CDID)
+            local target = nil
+            for _, obj in pairs(workspace:GetDescendants()) do
+               if (obj.Name == "JobWaypoint" or obj.Name == "Waypoint" or obj.Name == "Target") and obj:IsA("BasePart") then
+                  target = obj
+                  break
+               end
+            end
+
+            if vehicle and target then
+               -- Ketinggian terbang 350 unit (Aman dari gunung di Jateng)
+               local flyHeight = Vector3.new(0, 350, 0)
+               local targetPos = target.Position + flyHeight
                
-               -- Jeda untuk menghindari deteksi anti-cheat
-               task.wait(0.05)
+               -- Menggerakkan kendaraan ke target (CFrame Interpolation)
+               vehicle:SetPrimaryPartCFrame(CFrame.new(vehicle.PrimaryPart.Position, targetPos))
+               vehicle.PrimaryPart.CFrame = vehicle.PrimaryPart.CFrame * CFrame.new(0, 0, -20) -- Kecepatan ditingkatkan ke 20
                
-               -- Jika sudah dekat secara horizontal, turunkan truck ke waypoint
-               if (veh.PrimaryPart.Position - targetPos).Magnitude < 50 then
-                  veh:SetPrimaryPartCFrame(CFrame.new(waypoint.Position))
-                  Rayfield:Notify({Title = "Selesai", Content = "Sampai di tujuan! Silakan ambil muatan baru."})
-                  _G.AutoJob = false -- Berhenti otomatis saat sampai
+               -- Matikan gravitasi kendaraan agar tidak jatuh saat terbang
+               if not vehicle.PrimaryPart:FindFirstChild("BodyVelocity") then
+                  local bv = Instance.new("BodyVelocity", vehicle.PrimaryPart)
+                  bv.Velocity = Vector3.new(0,0,0)
+                  bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+               end
+
+               -- Jika sudah tepat di atas target, turunkan paksa
+               local dist = (Vector2.new(vehicle.PrimaryPart.Position.X, vehicle.PrimaryPart.Position.Z) - Vector2.new(target.Position.X, target.Position.Z)).Magnitude
+               if dist < 50 then
+                  vehicle:SetPrimaryPartCFrame(CFrame.new(target.Position))
+                  if vehicle.PrimaryPart:FindFirstChild("BodyVelocity") then
+                     vehicle.PrimaryPart.BodyVelocity:Destroy()
+                  end
+                  Rayfield:Notify({Title = "Selesai", Content = "Sampai! Ambil job lagi."})
+                  _G.FullAuto = false -- Off otomatis biar aman
                end
             end
          end)
-         task.wait(0.1)
+         task.wait(0.01) -- Kecepatan refresh tinggi
       end
    end,
 })
 
--- 2. ANTI-AFK (AGAR TIDAK KICK SAAT ANTRI)
+-- FITUR PENDUKUNG: ANTI-AFK & NO-KICK
 Tab:CreateToggle({
-   Name = "Anti-AFK",
-   CurrentValue = false,
+   Name = "Anti-AFK (Stay Online)",
+   CurrentValue = true,
    Callback = function(Value)
-      _G.AFK = Value
+      _G.AntiAFK = Value
       game.Players.LocalPlayer.Idled:Connect(function()
-         if _G.AFK then
-            game:GetService("VirtualUser"):Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+         if _G.AntiAFK then
+            game:GetService("VirtualUser"):ClickButton2(Vector2.new())
          end
       end)
+   end,
+})
+
+-- FITUR TAMBAHAN: SPEED BYPASS (Agar lancar di Jateng)
+Tab:CreateButton({
+   Name = "Bypass Speed Detection",
+   Callback = function()
+      for _, v in pairs(getgc(true)) do
+         if type(v) == "table" and rawget(v, "MaxSpeed") then
+            v.MaxSpeed = 2000
+            v.Steer = 2000
+         end
+      end
+      Rayfield:Notify({Title = "Success", Content = "Speed Limit Dihapus!"})
    end,
 })
