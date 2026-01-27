@@ -1,0 +1,55 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "teamherowars41 Hub | Divine Light",
+   LoadingTitle = "Menyiapkan Cahaya Ilahi...",
+   LoadingSubtitle = "by teamherowars41",
+})
+
+local Tab = Window:CreateTab("Efek Cahaya", 4483362458)
+
+-- 1. SPAM CAHAYA (ILAHI MODE)
+Tab:CreateToggle({
+   Name = "Aktifkan Cahaya Ilahi",
+   CurrentValue = false,
+   Callback = function(Value)
+      _G.DivineLight = Value
+      
+      while _G.DivineLight do
+         pcall(function()
+            local char = game.Players.LocalPlayer.Character
+            local tool = char:FindFirstChildOfClass("Tool") -- Deteksi item di tangan
+            
+            if tool then
+                -- Menambahkan banyak cahaya ke item di tangan
+                for i = 1, 10 do
+                    local light = Instance.new("PointLight")
+                    light.Parent = tool:FindFirstChild("Handle") or tool:FindFirstChildWhichIsA("BasePart")
+                    light.Brightness = 100 -- Sangat Terang
+                    light.Range = 100
+                    light.Color = Color3.fromRGB(255, 255, 255) -- Putih Suci
+                    
+                    -- Hapus cahaya lama agar tidak bikin lag/crash
+                    game:GetService("Debris"):AddItem(light, 0.1)
+                end
+            end
+         end)
+         task.wait(0.05) -- Kecepatan spam cahaya
+      end
+   end,
+})
+
+-- 2. PENYELAMAT LAG (Jika HP panas)
+Tab:CreateButton({
+   Name = "Bersihkan Cahaya (Fix Lag)",
+   Callback = function()
+      for _, v in pairs(game.Workspace:GetDescendants()) do
+         if v:IsA("PointLight") or v:IsA("SpotLight") then
+            v:Destroy()
+         end
+      end
+      Rayfield:Notify({Title = "Cleaned", Content = "Cahaya berlebih telah dihapus!"})
+   end,
+})
+
+Tab:CreateSection("Catatan: Gunakan Senter/Flashlight agar lebih maksimal")
