@@ -1,76 +1,56 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "teamherowars41 Hub | God Edition",
-   LoadingTitle = "Mengganti Semua Fitur...",
+   Name = "teamherowars41 Hub | BRM5 & AFK",
+   LoadingTitle = "Menyiapkan Fitur Militer...",
    LoadingSubtitle = "by teamherowars41",
 })
 
-local Tab = Window:CreateTab("New Powers", 4483362458)
+local Tab = Window:CreateTab("BRM5 Farm", 4483362458)
 
--- 1. FITUR FLY (TERBANG)
-Tab:CreateButton({
-   Name = "Fly (E to Toggle)",
-   Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.lua"))()
-      Rayfield:Notify({Title = "Fly Aktif", Content = "Tekan E untuk terbang/berhenti"})
-   end,
-})
-
--- 2. NOCLIP (TEMBUS TEMBOK)
+-- Fitur Utama BRM5
 Tab:CreateToggle({
-   Name = "Noclip (Tembus Tembok)",
+   Name = "Auto Kill NPC (Silent Aim)",
    CurrentValue = false,
    Callback = function(Value)
-      _G.Noclip = Value
-      game:GetService("RunService").Stepped:Connect(function()
-         if _G.Noclip then
-            game.Players.LocalPlayer.Character.Humanoid:ChangeState(11)
-         end
-      end)
+      _G.AutoKill = Value
+      while _G.AutoKill do
+         pcall(function()
+            for _, v in pairs(workspace.Enemies:GetChildren()) do
+               if v:FindFirstChild("Head") and _G.AutoKill then
+                  game:GetService("ReplicatedStorage").Events.Hit:FireServer(v.Head.Position, v.Head)
+               end
+            end
+         end)
+         task.wait(0.5)
+      end
    end,
 })
 
--- 3. BTOOLS (BISA HAPUS APA SAJA)
 Tab:CreateButton({
-   Name = "Give BTools",
+   Name = "Enable No Recoil",
    Callback = function()
-      local tool1 = Instance.new("HopperBin", game.Players.LocalPlayer.Backpack)
-      local tool2 = Instance.new("HopperBin", game.Players.LocalPlayer.Backpack)
-      local tool3 = Instance.new("HopperBin", game.Players.LocalPlayer.Backpack)
-      tool1.BinType = "Hammer"
-      tool2.BinType = "Clone"
-      tool3.BinType = "Grab"
-      Rayfield:Notify({Title = "BTools", Content = "Cek Inventory kamu!"})
-   end,
-})
-
--- 4. CLICK TELEPORT (CTRL + KLIK)
-Tab:CreateButton({
-   Name = "Click Teleport (Ctrl + Click)",
-   Callback = function()
-      local UIS = game:GetService("UserInputService")
-      local player = game.Players.LocalPlayer
-      UIS.InputBegan:Connect(function(input)
-         if input.UserInputType == Enum.UserInputType.MouseButton1 and UIS:IsKeyDown(Enum.KeyCode.LeftControl) then
-            player.Character:MoveTo(player:GetMouse().Hit.p)
-         end
-      end)
-      Rayfield:Notify({Title = "Teleport", Content = "Tekan CTRL + Klik Kiri untuk pindah tempat"})
-   end,
-})
-
--- 5. SERVER HOP (PINDAH SERVER)
-Tab:CreateButton({
-   Name = "Server Hop (Pindah Server)",
-   Callback = function()
-      local x = game:GetService("TeleportService")
-      local y = game:GetService("HttpService")
-      local z = y:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Asc&limit=100"))
-      for i,v in pairs(z.data) do
-         if v.playing < v.maxPlayers then
-            x:TeleportToPlaceInstance(game.PlaceId, v.id)
+      for _, v in pairs(getgc(true)) do
+         if type(v) == "table" and rawget(v, "Recoil") then
+            v.Recoil = 0
+            v.Spread = 0
          end
       end
+   end,
+})
+
+Tab:CreateToggle({
+   Name = "Ultra AFK Mode (Anti-Kick)",
+   CurrentValue = false,
+   Callback = function(Value)
+      _G.AntiAFK = Value
+      local vu = game:GetService("VirtualUser")
+      game:GetService("Players").LocalPlayer.Idled:Connect(function()
+         if _G.AntiAFK then
+            vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+            wait(1)
+            vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+         end
+      end)
    end,
 })
