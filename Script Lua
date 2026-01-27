@@ -1,53 +1,76 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "Arceus X Hub | teamherowars41",
-   LoadingTitle = "Menjalankan Script...",
+   Name = "teamherowars41 Hub | God Edition",
+   LoadingTitle = "Mengganti Semua Fitur...",
    LoadingSubtitle = "by teamherowars41",
-   ConfigurationSaving = {
-      Enabled = true,
-      FolderName = "ArceusHub",
-      FileName = "Config"
-   }
 })
 
-local Tab = Window:CreateTab("Main Features", 4483362458) -- Ikon Home
+local Tab = Window:CreateTab("New Powers", 4483362458)
 
-Tab:CreateSlider({
-   Name = "Speed Hack",
-   Range = {16, 500},
-   Increment = 1,
-   Suffix = "Speed",
-   CurrentValue = 16,
-   Flag = "SliderSpeed",
-   Callback = function(Value)
-      game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
-   end,
-})
-
-Tab:CreateSlider({
-   Name = "Jump Power",
-   Range = {50, 500},
-   Increment = 1,
-   Suffix = "Power",
-   CurrentValue = 50,
-   Flag = "SliderJump",
-   Callback = function(Value)
-      game.Players.LocalPlayer.Character.Humanoid.JumpPower = Value
-   end,
-})
-
+-- 1. FITUR FLY (TERBANG)
 Tab:CreateButton({
-   Name = "Reset Speed & Jump",
+   Name = "Fly (E to Toggle)",
    Callback = function()
-      game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 16
-      game.Players.LocalPlayer.Character.Humanoid.JumpPower = 50
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.lua"))()
+      Rayfield:Notify({Title = "Fly Aktif", Content = "Tekan E untuk terbang/berhenti"})
    end,
 })
 
-Rayfield:Notify({
-   Title = "Berhasil!",
-   Content = "Script Hub telah dimuat.",
-   Duration = 5,
-   Image = 4483362458,
+-- 2. NOCLIP (TEMBUS TEMBOK)
+Tab:CreateToggle({
+   Name = "Noclip (Tembus Tembok)",
+   CurrentValue = false,
+   Callback = function(Value)
+      _G.Noclip = Value
+      game:GetService("RunService").Stepped:Connect(function()
+         if _G.Noclip then
+            game.Players.LocalPlayer.Character.Humanoid:ChangeState(11)
+         end
+      end)
+   end,
+})
+
+-- 3. BTOOLS (BISA HAPUS APA SAJA)
+Tab:CreateButton({
+   Name = "Give BTools",
+   Callback = function()
+      local tool1 = Instance.new("HopperBin", game.Players.LocalPlayer.Backpack)
+      local tool2 = Instance.new("HopperBin", game.Players.LocalPlayer.Backpack)
+      local tool3 = Instance.new("HopperBin", game.Players.LocalPlayer.Backpack)
+      tool1.BinType = "Hammer"
+      tool2.BinType = "Clone"
+      tool3.BinType = "Grab"
+      Rayfield:Notify({Title = "BTools", Content = "Cek Inventory kamu!"})
+   end,
+})
+
+-- 4. CLICK TELEPORT (CTRL + KLIK)
+Tab:CreateButton({
+   Name = "Click Teleport (Ctrl + Click)",
+   Callback = function()
+      local UIS = game:GetService("UserInputService")
+      local player = game.Players.LocalPlayer
+      UIS.InputBegan:Connect(function(input)
+         if input.UserInputType == Enum.UserInputType.MouseButton1 and UIS:IsKeyDown(Enum.KeyCode.LeftControl) then
+            player.Character:MoveTo(player:GetMouse().Hit.p)
+         end
+      end)
+      Rayfield:Notify({Title = "Teleport", Content = "Tekan CTRL + Klik Kiri untuk pindah tempat"})
+   end,
+})
+
+-- 5. SERVER HOP (PINDAH SERVER)
+Tab:CreateButton({
+   Name = "Server Hop (Pindah Server)",
+   Callback = function()
+      local x = game:GetService("TeleportService")
+      local y = game:GetService("HttpService")
+      local z = y:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Asc&limit=100"))
+      for i,v in pairs(z.data) do
+         if v.playing < v.maxPlayers then
+            x:TeleportToPlaceInstance(game.PlaceId, v.id)
+         end
+      end
+   end,
 })
