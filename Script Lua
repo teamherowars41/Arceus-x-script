@@ -1,92 +1,89 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "teamherowars41 Hub | CDID FULL AUTO",
-   LoadingTitle = "Mengaktifkan Sistem Pengiriman Kilat...",
+   Name = "teamherowars41 Hub | CDID TYCOON",
+   LoadingTitle = "Menghitung Pundi-Pundi Rupiah...",
    LoadingSubtitle = "by teamherowars41",
 })
 
-local Tab = Window:CreateTab("Full Farm", 4483362458)
+local Tab = Window:CreateTab("Auto Farm V3", 4483362458)
 
--- FITUR UTAMA: FULL AUTO FLY TO WAYPOINT
+-- VARIABEL STATISTIK
+local startMoney = game.Players.LocalPlayer.leaderstats.Money.Value
+local moneyEarned = 0
+
+-- LABEL UNTUK TRACKER
+local MoneyLabel = Tab:CreateLabel("Total Uang Didapat: Rp 0")
+local StatusLabel = Tab:CreateLabel("Status: Menunggu Misi...")
+
+-- UPDATE TRACKER SECARA OTOMATIS
+spawn(function()
+    while task.wait(1) do
+        moneyEarned = game.Players.LocalPlayer.leaderstats.Money.Value - startMoney
+        MoneyLabel:Set("Total Uang Didapat: Rp " .. tostring(moneyEarned))
+    end
+end)
+
+-- FITUR TERBANG
+_G.Height = 600 -- Lebih tinggi sesuai permintaan
+_G.Speed = 60  -- Lebih cepat sesuai permintaan
+
 Tab:CreateToggle({
-   Name = "Aktifkan Full Auto Fly",
+   Name = "Super Fast Fly (No Lag)",
    CurrentValue = false,
    Callback = function(Value)
       _G.FullAuto = Value
+      if Value then StatusLabel:Set("Status: Terbang ke Tujuan...") else StatusLabel:Set("Status: Idle") end
       
       while _G.FullAuto do
          pcall(function()
-            local player = game.Players.LocalPlayer
-            local character = player.Character
-            local vehicle = character.Humanoid.SeatPart.Parent
+            local lp = game.Players.LocalPlayer
+            local veh = lp.Character.Humanoid.SeatPart.Parent
+            local target = workspace:FindFirstChild("JobWaypoint") or workspace:FindFirstChild("Waypoint")
             
-            -- Mencari Waypoint (Mencakup semua kemungkinan nama di CDID)
-            local target = nil
-            for _, obj in pairs(workspace:GetDescendants()) do
-               if (obj.Name == "JobWaypoint" or obj.Name == "Waypoint" or obj.Name == "Target") and obj:IsA("BasePart") then
-                  target = obj
-                  break
-               end
-            end
-
-            if vehicle and target then
-               -- Ketinggian terbang 350 unit (Aman dari gunung di Jateng)
-               local flyHeight = Vector3.new(0, 350, 0)
-               local targetPos = target.Position + flyHeight
+            if veh and target then
+               -- Efek terbang tinggi & cepat
+               local targetPos = target.Position + Vector3.new(0, _G.Height, 0)
+               veh:SetPrimaryPartCFrame(CFrame.new(veh.PrimaryPart.Position, targetPos))
+               veh.PrimaryPart.CFrame = veh.PrimaryPart.CFrame * CFrame.new(0, 0, -_G.Speed)
                
-               -- Menggerakkan kendaraan ke target (CFrame Interpolation)
-               vehicle:SetPrimaryPartCFrame(CFrame.new(vehicle.PrimaryPart.Position, targetPos))
-               vehicle.PrimaryPart.CFrame = vehicle.PrimaryPart.CFrame * CFrame.new(0, 0, -20) -- Kecepatan ditingkatkan ke 20
-               
-               -- Matikan gravitasi kendaraan agar tidak jatuh saat terbang
-               if not vehicle.PrimaryPart:FindFirstChild("BodyVelocity") then
-                  local bv = Instance.new("BodyVelocity", vehicle.PrimaryPart)
-                  bv.Velocity = Vector3.new(0,0,0)
-                  bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+               -- Anti-Gravitasi agar mulus
+               if not veh.PrimaryPart:FindFirstChild("NoGravity") then
+                  local bp = Instance.new("BodyPosition", veh.PrimaryPart)
+                  bp.Name = "NoGravity"
+                  bp.MaxForce = Vector3.new(0, 9e9, 0)
+                  bp.Position = Vector3.new(0, _G.Height, 0)
                end
 
-               -- Jika sudah tepat di atas target, turunkan paksa
-               local dist = (Vector2.new(vehicle.PrimaryPart.Position.X, vehicle.PrimaryPart.Position.Z) - Vector2.new(target.Position.X, target.Position.Z)).Magnitude
-               if dist < 50 then
-                  vehicle:SetPrimaryPartCFrame(CFrame.new(target.Position))
-                  if vehicle.PrimaryPart:FindFirstChild("BodyVelocity") then
-                     vehicle.PrimaryPart.BodyVelocity:Destroy()
-                  end
-                  Rayfield:Notify({Title = "Selesai", Content = "Sampai! Ambil job lagi."})
-                  _G.FullAuto = false -- Off otomatis biar aman
+               -- Sampai di tujuan
+               if (veh.PrimaryPart.Position - targetPos).Magnitude < 70 then
+                  if veh.PrimaryPart:FindFirstChild("NoGravity") then veh.PrimaryPart.NoGravity:Destroy() end
+                  veh:SetPrimaryPartCFrame(CFrame.new(target.Position))
+                  _G.FullAuto = false
+                  StatusLabel:Set("Status: Misi Selesai! Ambil Lagi.")
+                  Rayfield:Notify({Title = "CUAN!", Content = "Uang berhasil masuk kantong!"})
                end
             end
          end)
-         task.wait(0.01) -- Kecepatan refresh tinggi
+         task.wait(0.01)
       end
    end,
 })
 
--- FITUR PENDUKUNG: ANTI-AFK & NO-KICK
-Tab:CreateToggle({
-   Name = "Anti-AFK (Stay Online)",
-   CurrentValue = true,
-   Callback = function(Value)
-      _G.AntiAFK = Value
-      game.Players.LocalPlayer.Idled:Connect(function()
-         if _G.AntiAFK then
-            game:GetService("VirtualUser"):ClickButton2(Vector2.new())
-         end
-      end)
-   end,
+Tab:CreateSection("Pengaturan Terbang")
+
+Tab:CreateSlider({
+   Name = "Ketinggian (Biar Ga Lag)",
+   Range = {300, 1500},
+   Increment = 50,
+   CurrentValue = 600,
+   Callback = function(V) _G.Height = V end,
 })
 
--- FITUR TAMBAHAN: SPEED BYPASS (Agar lancar di Jateng)
-Tab:CreateButton({
-   Name = "Bypass Speed Detection",
-   Callback = function()
-      for _, v in pairs(getgc(true)) do
-         if type(v) == "table" and rawget(v, "MaxSpeed") then
-            v.MaxSpeed = 2000
-            v.Steer = 2000
-         end
-      end
-      Rayfield:Notify({Title = "Success", Content = "Speed Limit Dihapus!"})
-   end,
+Tab:CreateSlider({
+   Name = "Kecepatan Terbang",
+   Range = {20, 150},
+   Increment = 5,
+   CurrentValue = 60,
+   Callback = function(V) _G.Speed = V end,
 })
