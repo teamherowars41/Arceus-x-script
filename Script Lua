@@ -1,0 +1,6 @@
+print("Script Berhasil!")
+game.StarterGui:SetCore("SendNotification", {
+    Title = "Arceus X Hub";
+    Text = "Script GitHub berhasil dimuat!";
+    Duration = 5;
+})
