@@ -1,56 +1,37 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "teamherowars41 Hub | BRM5 & AFK",
-   LoadingTitle = "Menyiapkan Fitur Militer...",
+   Name = "teamherowars41 Hub | BRM5 God Mode",
+   LoadingTitle = "Menyiapkan Amunisi Tak Terbatas...",
    LoadingSubtitle = "by teamherowars41",
 })
 
-local Tab = Window:CreateTab("BRM5 Farm", 4483362458)
+local Tab = Window:CreateTab("Auto Farm", 4483362458)
 
--- Fitur Utama BRM5
+-- 1. UNLIMITED AMMO (FITUR BARU)
+Tab:CreateButton({
+   Name = "Enable Unlimited Ammo",
+   Callback = function()
+       -- Mencari modul senjata dan mengunci jumlah peluru
+       for _, v in pairs(getgc(true)) do
+           if type(v) == "table" and rawget(v, "Ammo") then
+               v.Ammo = 999
+               v.StoredAmmo = 999
+           end
+       end
+       Rayfield:Notify({Title = "Ammo", Content = "Unlimited Ammo Aktif!"})
+   end,
+})
+
+-- 2. FULL AUTO FARM (TP + KILL)
 Tab:CreateToggle({
-   Name = "Auto Kill NPC (Silent Aim)",
+   Name = "Full Auto Farm (TP + Kill)",
    CurrentValue = false,
    Callback = function(Value)
-      _G.AutoKill = Value
-      while _G.AutoKill do
+      _G.FullFarm = Value
+      while _G.FullFarm do
          pcall(function()
             for _, v in pairs(workspace.Enemies:GetChildren()) do
-               if v:FindFirstChild("Head") and _G.AutoKill then
-                  game:GetService("ReplicatedStorage").Events.Hit:FireServer(v.Head.Position, v.Head)
-               end
-            end
-         end)
-         task.wait(0.5)
-      end
-   end,
-})
-
-Tab:CreateButton({
-   Name = "Enable No Recoil",
-   Callback = function()
-      for _, v in pairs(getgc(true)) do
-         if type(v) == "table" and rawget(v, "Recoil") then
-            v.Recoil = 0
-            v.Spread = 0
-         end
-      end
-   end,
-})
-
-Tab:CreateToggle({
-   Name = "Ultra AFK Mode (Anti-Kick)",
-   CurrentValue = false,
-   Callback = function(Value)
-      _G.AntiAFK = Value
-      local vu = game:GetService("VirtualUser")
-      game:GetService("Players").LocalPlayer.Idled:Connect(function()
-         if _G.AntiAFK then
-            vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
-            wait(1)
-            vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
-         end
-      end)
-   end,
-})
+               if v:FindFirstChild("Head") and _G.FullFarm then
+                  -- Teleport ke atas kepala musuh agar aman
+                  game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Head.CFrame * CFrame.new(0, 10, 0)
