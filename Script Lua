@@ -1,37 +1,59 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "teamherowars41 Hub | BRM5 God Mode",
-   LoadingTitle = "Menyiapkan Amunisi Tak Terbatas...",
+   Name = "teamherowars41 Hub | CDID Jateng Edition",
+   LoadingTitle = "Menyiapkan Rute Jawa Tengah...",
    LoadingSubtitle = "by teamherowars41",
 })
 
-local Tab = Window:CreateTab("Auto Farm", 4483362458)
+local Tab = Window:CreateTab("Truck Job", 4483362458)
 
--- 1. UNLIMITED AMMO (FITUR BARU)
-Tab:CreateButton({
-   Name = "Enable Unlimited Ammo",
-   Callback = function()
-       -- Mencari modul senjata dan mengunci jumlah peluru
-       for _, v in pairs(getgc(true)) do
-           if type(v) == "table" and rawget(v, "Ammo") then
-               v.Ammo = 999
-               v.StoredAmmo = 999
-           end
-       end
-       Rayfield:Notify({Title = "Ammo", Content = "Unlimited Ammo Aktif!"})
+-- 1. AUTO MISSION FLY (TERBANG KE WAYPOINT)
+Tab:CreateToggle({
+   Name = "Auto Fly to Waypoint (Truck Job)",
+   CurrentValue = false,
+   Callback = function(Value)
+      _G.AutoJob = Value
+      while _G.AutoJob do
+         pcall(function()
+            local char = game.Players.LocalPlayer.Character
+            local veh = char.Humanoid.SeatPart.Parent -- Mendeteksi kendaraan
+            
+            -- Mencari Waypoint tujuan dari sistem game CDID
+            local waypoint = workspace:FindFirstChild("JobWaypoint") or workspace:FindFirstChild("Waypoint")
+            
+            if veh and waypoint then
+               -- Terbang ke posisi waypoint dengan ketinggian 300 agar aman dari bangunan
+               local targetPos = waypoint.Position + Vector3.new(0, 300, 0)
+               veh:SetPrimaryPartCFrame(CFrame.new(veh.PrimaryPart.Position, targetPos))
+               veh.PrimaryPart.CFrame = veh.PrimaryPart.CFrame * CFrame.new(0, 0, -10)
+               
+               -- Jeda untuk menghindari deteksi anti-cheat
+               task.wait(0.05)
+               
+               -- Jika sudah dekat secara horizontal, turunkan truck ke waypoint
+               if (veh.PrimaryPart.Position - targetPos).Magnitude < 50 then
+                  veh:SetPrimaryPartCFrame(CFrame.new(waypoint.Position))
+                  Rayfield:Notify({Title = "Selesai", Content = "Sampai di tujuan! Silakan ambil muatan baru."})
+                  _G.AutoJob = false -- Berhenti otomatis saat sampai
+               end
+            end
+         end)
+         task.wait(0.1)
+      end
    end,
 })
 
--- 2. FULL AUTO FARM (TP + KILL)
+-- 2. ANTI-AFK (AGAR TIDAK KICK SAAT ANTRI)
 Tab:CreateToggle({
-   Name = "Full Auto Farm (TP + Kill)",
+   Name = "Anti-AFK",
    CurrentValue = false,
    Callback = function(Value)
-      _G.FullFarm = Value
-      while _G.FullFarm do
-         pcall(function()
-            for _, v in pairs(workspace.Enemies:GetChildren()) do
-               if v:FindFirstChild("Head") and _G.FullFarm then
-                  -- Teleport ke atas kepala musuh agar aman
-                  game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Head.CFrame * CFrame.new(0, 10, 0)
+      _G.AFK = Value
+      game.Players.LocalPlayer.Idled:Connect(function()
+         if _G.AFK then
+            game:GetService("VirtualUser"):Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+         end
+      end)
+   end,
+})
