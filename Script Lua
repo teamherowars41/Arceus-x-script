@@ -1,6 +1,53 @@
-print("Script Berhasil!")
-game.StarterGui:SetCore("SendNotification", {
-    Title = "Arceus X Hub";
-    Text = "Script GitHub berhasil dimuat!";
-    Duration = 5;
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "Arceus X Hub | teamherowars41",
+   LoadingTitle = "Menjalankan Script...",
+   LoadingSubtitle = "by teamherowars41",
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = "ArceusHub",
+      FileName = "Config"
+   }
+})
+
+local Tab = Window:CreateTab("Main Features", 4483362458) -- Ikon Home
+
+Tab:CreateSlider({
+   Name = "Speed Hack",
+   Range = {16, 500},
+   Increment = 1,
+   Suffix = "Speed",
+   CurrentValue = 16,
+   Flag = "SliderSpeed",
+   Callback = function(Value)
+      game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+   end,
+})
+
+Tab:CreateSlider({
+   Name = "Jump Power",
+   Range = {50, 500},
+   Increment = 1,
+   Suffix = "Power",
+   CurrentValue = 50,
+   Flag = "SliderJump",
+   Callback = function(Value)
+      game.Players.LocalPlayer.Character.Humanoid.JumpPower = Value
+   end,
+})
+
+Tab:CreateButton({
+   Name = "Reset Speed & Jump",
+   Callback = function()
+      game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 16
+      game.Players.LocalPlayer.Character.Humanoid.JumpPower = 50
+   end,
+})
+
+Rayfield:Notify({
+   Title = "Berhasil!",
+   Content = "Script Hub telah dimuat.",
+   Duration = 5,
+   Image = 4483362458,
 })
