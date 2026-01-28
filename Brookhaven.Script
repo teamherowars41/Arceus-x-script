@@ -1,58 +1,58 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "teamherowars41 Hub | BROOKHAVEN FE TROLL",
-   LoadingTitle = "Menghapus Script Non-FE...",
+   Name = "teamherowars41 Hub | FE TROLL",
+   LoadingTitle = "Fixing Callback Errors...",
    LoadingSubtitle = "by teamherowars41",
 })
 
-local Tab = Window:CreateTab("Main Troll", 4483362458)
+local Tab = Window:CreateTab("Brookhaven FE", 4483362458)
 
--- 1. FE SIZE CHANGER (Ukuran Karakter)
-Tab:CreateSection("Karakter (Terlihat Semua Orang)")
+-- Fungsi Helper untuk Remote Brookhaven (Mencegah Error)
+local function UpdateBrookhaven(prop, value)
+    pcall(function()
+        game:GetService("ReplicatedStorage").RemoteEvents.PropUpdate:FireServer("UpdateProp", prop, value)
+    end)
+end
+
+-- 1. FE SIZE
 Tab:CreateButton({
    Name = "Jadi Raksasa (FE)",
    Callback = function()
-      game:GetService("ReplicatedStorage").RemoteEvents.PropUpdate:FireServer("UpdateProp", "Size", 2.0)
+      UpdateBrookhaven("Size", 2.0)
    end,
 })
 
 Tab:CreateButton({
    Name = "Jadi Kurcaci (FE)",
    Callback = function()
-      game:GetService("ReplicatedStorage").RemoteEvents.PropUpdate:FireServer("UpdateProp", "Size", 0.3)
+      UpdateBrookhaven("Size", 0.3)
    end,
 })
 
--- 2. FE SPEED & JUMP (Bypass Animasi)
+-- 2. FE SPEED
 Tab:CreateSlider({
-   Name = "Lari Kencang (FE)",
+   Name = "Kecepatan Jalan",
    Range = {16, 150},
    Increment = 1,
    CurrentValue = 16,
    Callback = function(Value)
-      game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+      pcall(function()
+          game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+      end)
    end,
 })
 
--- 3. FE SCARY MUSIC (Satu Server Dengar)
-Tab:CreateSection("Suara Horor (FE)")
-local function PlayFE(id)
-    game:GetService("ReplicatedStorage").RemoteEvents.PropUpdate:FireServer("UpdateProp", "MusicID", "rbxassetid://"..id)
-end
-
-Tab:CreateButton({
-   Name = "Spam Jeritan Horor",
-   Callback = function() PlayFE("4835664244") end,
+-- 3. FE MUSIC (SCARY)
+Tab:CreateInput({
+   Name = "Play Music ID (Loud)",
+   PlaceholderText = "ID Suara...",
+   Callback = function(Text)
+      UpdateBrookhaven("MusicID", "rbxassetid://"..tostring(Text))
+   end,
 })
 
-Tab:CreateButton({
-   Name = "Suara Tawa Kuntilanak",
-   Callback = function() PlayFE("1331256377") end,
-})
-
--- 4. FE VEHICLE LIGHTS (CAHAYA ILAHI MOBIL)
-Tab:CreateSection("Kendaraan (Wajib Naik Mobil)")
+-- 4. FE DIVINE LIGHT (VEHICLE)
 Tab:CreateToggle({
    Name = "Mobil Cahaya Ilahi (FE)",
    CurrentValue = false,
@@ -60,35 +60,19 @@ Tab:CreateToggle({
       _G.FE_Divine = Value
       while _G.FE_Divine do
          pcall(function()
-            local veh = game.Players.LocalPlayer.Character.Humanoid.SeatPart.Parent
-            for _, light in pairs(veh:GetDescendants()) do
-               if light:IsA("Light") then
-                  light.Brightness = 1000 -- Silau banget
-                  light.Range = 300
-                  light.Enabled = true
+            local char = game.Players.LocalPlayer.Character
+            local veh = char.Humanoid.SeatPart.Parent
+            if veh then
+               for _, light in pairs(veh:GetDescendants()) do
+                  if light:IsA("Light") then
+                     light.Brightness = 1000
+                     light.Range = 300
+                     light.Enabled = true
+                  end
                end
             end
          end)
-         task.wait(0.3)
+         task.wait(0.5)
       end
-   end,
-})
-
--- 5. FE TROLL NAMES
-Tab:CreateSection("Bio Troll")
-Tab:CreateInput({
-   Name = "Ganti Bio/Nama (FE)",
-   PlaceholderText = "Ketik sesuatu...",
-   Callback = function(Text)
-      game:GetService("ReplicatedStorage").RemoteEvents.PropUpdate:FireServer("UpdateProp", "Bio", Text)
-   end,
-})
-
--- 6. FE TELEPORT
-Tab:CreateSection("Teleport Lokasi")
-Tab:CreateButton({
-   Name = "Teleport ke Rumah 1",
-   Callback = function()
-      game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-380, 20, 350)
    end,
 })
