@@ -1,34 +1,33 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "teamherowars41 | FE BROOKHAVEN ALL-IN-ONE",
-   LoadingTitle = "Menghapus Fitur Non-FE...",
+   Name = "teamherowars41 Hub | BROOKHAVEN FE TROLL",
+   LoadingTitle = "Menghapus Script Non-FE...",
    LoadingSubtitle = "by teamherowars41",
 })
 
-local Tab = Window:CreateTab("FE Menu", 4483362458)
+local Tab = Window:CreateTab("Main Troll", 4483362458)
 
--- 1. FE SIZE CHANGER (Menjadi Raksasa atau Kurcaci)
-Tab:CreateSection("Karakter (FE)")
+-- 1. FE SIZE CHANGER (Ukuran Karakter)
+Tab:CreateSection("Karakter (Terlihat Semua Orang)")
 Tab:CreateButton({
    Name = "Jadi Raksasa (FE)",
    Callback = function()
       game:GetService("ReplicatedStorage").RemoteEvents.PropUpdate:FireServer("UpdateProp", "Size", 2.0)
-      Rayfield:Notify({Title = "Berhasil", Content = "Semua orang melihatmu menjadi besar!"})
    end,
 })
 
 Tab:CreateButton({
    Name = "Jadi Kurcaci (FE)",
    Callback = function()
-      game:GetService("ReplicatedStorage").RemoteEvents.PropUpdate:FireServer("UpdateProp", "Size", 0.5)
+      game:GetService("ReplicatedStorage").RemoteEvents.PropUpdate:FireServer("UpdateProp", "Size", 0.3)
    end,
 })
 
--- 2. FE SPEED BYPASS (Terlihat orang lain lari kencang)
+-- 2. FE SPEED & JUMP (Bypass Animasi)
 Tab:CreateSlider({
-   Name = "Kecepatan Jalan (FE)",
-   Range = {16, 100},
+   Name = "Lari Kencang (FE)",
+   Range = {16, 150},
    Increment = 1,
    CurrentValue = 16,
    Callback = function(Value)
@@ -36,41 +35,47 @@ Tab:CreateSlider({
    end,
 })
 
--- 3. FE SCARY AUDIO (Satu server dengar)
-Tab:CreateSection("Suara & Musik (FE)")
-Tab:CreateInput({
-   Name = "Play Music ID (Loud)",
-   PlaceholderText = "Masukkan ID Suara...",
-   Callback = function(Text)
-      game:GetService("ReplicatedStorage").RemoteEvents.PropUpdate:FireServer("UpdateProp", "MusicID", "rbxassetid://"..Text)
-   end,
+-- 3. FE SCARY MUSIC (Satu Server Dengar)
+Tab:CreateSection("Suara Horor (FE)")
+local function PlayFE(id)
+    game:GetService("ReplicatedStorage").RemoteEvents.PropUpdate:FireServer("UpdateProp", "MusicID", "rbxassetid://"..id)
+end
+
+Tab:CreateButton({
+   Name = "Spam Jeritan Horor",
+   Callback = function() PlayFE("4835664244") end,
 })
 
--- 4. FE VEHICLE LIGHTS (Cahaya Ilahi Mobil - Paling Silau)
-Tab:CreateSection("Kendaraan (FE)")
+Tab:CreateButton({
+   Name = "Suara Tawa Kuntilanak",
+   Callback = function() PlayFE("1331256377") end,
+})
+
+-- 4. FE VEHICLE LIGHTS (CAHAYA ILAHI MOBIL)
+Tab:CreateSection("Kendaraan (Wajib Naik Mobil)")
 Tab:CreateToggle({
    Name = "Mobil Cahaya Ilahi (FE)",
    CurrentValue = false,
    Callback = function(Value)
-      _G.FE_Lights = Value
-      while _G.FE_Lights do
+      _G.FE_Divine = Value
+      while _G.FE_Divine do
          pcall(function()
             local veh = game.Players.LocalPlayer.Character.Humanoid.SeatPart.Parent
             for _, light in pairs(veh:GetDescendants()) do
                if light:IsA("Light") then
-                  light.Brightness = 500
-                  light.Range = 200
+                  light.Brightness = 1000 -- Silau banget
+                  light.Range = 300
                   light.Enabled = true
                end
             end
          end)
-         task.wait(0.5)
+         task.wait(0.3)
       end
    end,
 })
 
--- 5. FE TROLL NAMES (Ganti Bio secara otomatis)
-Tab:CreateSection("Troll (FE)")
+-- 5. FE TROLL NAMES
+Tab:CreateSection("Bio Troll")
 Tab:CreateInput({
    Name = "Ganti Bio/Nama (FE)",
    PlaceholderText = "Ketik sesuatu...",
@@ -79,11 +84,11 @@ Tab:CreateInput({
    end,
 })
 
--- 6. FE TELEPORT (Ke Rumah Orang)
+-- 6. FE TELEPORT
+Tab:CreateSection("Teleport Lokasi")
 Tab:CreateButton({
    Name = "Teleport ke Rumah 1",
    Callback = function()
-      -- Teleport koordinat rumah (FE karena karaktermu berpindah posisi di server)
       game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-380, 20, 350)
    end,
 })
