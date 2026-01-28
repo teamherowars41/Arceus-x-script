@@ -1,109 +1,125 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "ATOMICALS HUB | TRUCK FLY REPLICA",
-   LoadingTitle = "Menghubungkan ke CDID Jateng...",
+   Name = "teamherowars41 Hub | CDID PURE FLY",
+   LoadingTitle = "Menyiapkan Engine Atomicals...",
    LoadingSubtitle = "by teamherowars41",
 })
 
-local Tab = Window:CreateTab("Auto Farm", 4483362458)
+local Tab = Window:CreateTab("Truck Farm", 4483362458)
 
 -- Pengaturan Global
 _G.AutoFly = false
 _G.FlySpeed = 100
 _G.FlyHeight = 550
-local StartMoney = game.Players.LocalPlayer.leaderstats.Money.Value
 
--- UI MONEY TRACKER (Atomicals Style)
-local function CreateMoneyTracker()
-    if game.CoreGui:FindFirstChild("MoneyTracker") then game.CoreGui.MoneyTracker:Destroy() end
-    
-    local sg = Instance.new("ScreenGui", game.CoreGui)
-    sg.Name = "MoneyTracker"
-    
-    local frame = Instance.new("Frame", sg)
-    frame.Size = UDim2.new(0, 200, 0, 80)
-    frame.Position = UDim2.new(0.5, -100, 0, 50)
-    frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-    frame.BorderSizePixel = 2
-    frame.Active = true
-    frame.Draggable = true -- Bisa digeser
-    
-    local title = Instance.new("TextLabel", frame)
-    title.Text = "ATOMICALS MONEY TRACKER"
-    title.Size = UDim2.new(1, 0, 0, 25)
-    title.TextColor3 = Color3.fromRGB(0, 255, 150)
-    title.BackgroundTransparency = 1
-    title.Font = Enum.Font.SourceSansBold
-    
-    local stats = Instance.new("TextLabel", frame)
-    stats.Name = "Stats"
-    stats.Text = "Earnings: Rp 0"
-    stats.Position = UDim2.new(0, 0, 0, 35)
-    stats.Size = UDim2.new(1, 0, 0, 40)
-    stats.TextColor3 = Color3.fromRGB(255, 255, 255)
-    stats.BackgroundTransparency = 1
-    stats.TextSize = 18
-    stats.Font = Enum.Font.Code
-
-    -- Update Money secara Real-Time
-    spawn(function()
-        while _G.AutoFly and task.wait(1) do
-            local currentMoney = game.Players.LocalPlayer.leaderstats.Money.Value
-            local earned = currentMoney - StartMoney
-            stats.Text = "Earnings: Rp " .. tostring(earned):reverse():gsub("%d%d%d", "%1."):reverse():gsub("^%.", "")
-        end
-        if not _G.AutoFly then sg:Destroy() end
-    end)
-end
-
-Tab:CreateSection("Automation")
+Tab:CreateSection("Auto Pilot")
 
 Tab:CreateToggle({
-   Name = "Start Auto Fly (Atomicals Move)",
+   Name = "Aktifkan Auto Fly (Duduk di Supir)",
    CurrentValue = false,
    Callback = function(Value)
       _G.AutoFly = Value
       
       if Value then
-         StartMoney = game.Players.LocalPlayer.leaderstats.Money.Value -- Reset hitungan saat start
-         CreateMoneyTracker()
-         Rayfield:Notify({Title = "Sistem", Content = "Duduk di Truk untuk Terbang!"})
+         Rayfield:Notify({Title = "Sistem Aktif", Content = "Duduk di truk untuk mulai terbang ke tujuan!"})
       end
 
+      -- Loop Engine Terbang (Metode Atomicals)
       while _G.AutoFly do
          task.wait()
          pcall(function()
             local lp = game.Players.LocalPlayer
             local char = lp.Character
-            local veh = char.Humanoid.SeatPart.Parent
+            local hum = char:FindFirstChild("Humanoid")
+            local seat = hum and hum.SeatPart
             
-            -- Mencari Waypoint (Cek Descendants workspace agar akurat)
-            local waypoint = nil
-            for _, v in pairs(workspace:GetDescendants()) do
-               if (v.Name == "JobWaypoint" or v.Name == "Waypoint") and v:IsA("BasePart") then
-                  waypoint = v
-                  break
+            -- Hanya jalan jika kita di kursi supir kendaraan
+            if seat and seat.Parent then
+               local veh = seat.Parent
+               local root = veh.PrimaryPart
+               
+               -- Cari Waypoint aktif di Map
+               local waypoint = nil
+               for _, v in pairs(workspace:GetDescendants()) do
+                  if (v.Name == "JobWaypoint" or v.Name == "Waypoint") and v:IsA("BasePart") then
+                     waypoint = v
+                     break
+                  end
+               end
+
+               if root and waypoint then
+                  -- Ketinggian aman di atas waypoint
+                  local targetPos = waypoint.Position + Vector3.new(0, _G.FlyHeight, 0)
+                  
+                  -- ATOMICALS SMOOTH LERP (Terbang Mulus)
+                  root.CFrame = root.CFrame:Lerp(CFrame.new(root.Position, targetPos) * CFrame.new(0, 0, -_G.FlySpeed/10), 0.15)
+                  
+                  -- Anti-Gravitasi (BodyForce agar stabil)
+                  if not root:FindFirstChild("FlightForce") then
+                     local bf = Instance.new("BodyForce", root)
+                     bf.Name = "FlightForce"
+                     bf.Force = Vector3.new(0, workspace.Gravity * root:GetMass(), 0)
+                  end
+                  
+                  -- Sistem Landing (Mendarat Otomatis)
+                  local dist = (Vector2.new(root.Position.X, root.Position.Z) - Vector2.new(waypoint.Position.X, waypoint.Position.Z)).Magnitude
+                  if dist < 70 then
+                     if root:FindFirstChild("FlightForce") then root.FlightForce:Destroy() end
+                     root.CFrame = CFrame.new(waypoint.Position + Vector3.new(0, 2, 0))
+                     task.wait(2) -- Jeda agar gaji masuk
+                  end
                end
             end
+         end)
+      end
+   end,
+})
 
-            if veh and waypoint then
-               local root = veh.PrimaryPart
-               local targetPos = waypoint.Position + Vector3.new(0, _G.FlyHeight, 0)
-               
-               -- ATOMICALS FLY ENGINE (SMOOTH LERP)
-               -- Menggunakan Lerp untuk pergerakan halus tanpa patah-patah
-               root.CFrame = root.CFrame:Lerp(CFrame.new(root.Position, targetPos) * CFrame.new(0, 0, -_G.FlySpeed/10), 0.12)
-               
-               -- Anti-Gravity Force (Mencegah Truk Jatuh/Masuk Tanah)
-               if not root:FindFirstChild("FlightForce") then
-                  local bf = Instance.new("BodyForce", root)
-                  bf.Name = "FlightForce"
-                  bf.Force = Vector3.new(0, workspace.Gravity * root:GetMass(), 0)
-               end
+Tab:CreateSection("Settings")
 
-               -- Landing System
-               local dist = (Vector2.new(root.Position.X, root.Position.Z) - Vector2.new(waypoint.Position.X, waypoint.Position.Z)).Magnitude
+Tab:CreateSlider({
+   Name = "Kecepatan Terbang",
+   Range = {50, 300},
+   Increment = 10,
+   CurrentValue = 100,
+   Callback = function(v) _G.FlySpeed = v end,
+})
+
+Tab:CreateSlider({
+   Name = "Ketinggian (Height)",
+   Range = {300, 1000},
+   Increment = 50,
+   CurrentValue = 550,
+   Callback = function(v) _G.FlyHeight = v end,
+})
+
+Tab:CreateSection("Extra")
+
+Tab:CreateButton({
+   Name = "Bypass Speed Limit Truk",
+   Callback = function()
+      pcall(function()
+         local car = game.Players.LocalPlayer.Character.Humanoid.SeatPart.Parent
+         if car:FindFirstChild("DriveValues") then
+             car.DriveValues.MaxSpeed.Value = 1000
+         end
+      end)
+   end,
+})
+
+Tab:CreateButton({
+   Name = "Anti-AFK",
+   Callback = function()
+      local vu = game:GetService("VirtualUser")
+      game.Players.LocalPlayer.Idled:Connect(function()
+         vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+         wait(1)
+         vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+      end)
+      Rayfield:Notify({Title = "Anti-AFK", Content = "Sudah Aktif!"})
+   end,
+})
                if dist < 75 then
                   if root:FindFirstChild("FlightForce") then root.FlightForce:Destroy() end
                   root.CFrame = CFrame.new(waypoint.Position + Vector3.new(0, 2, 0))
