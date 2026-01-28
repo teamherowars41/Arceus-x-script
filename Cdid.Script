@@ -1,0 +1,117 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "ATOMICALS HUB | CDID JATENG REPLICA",
+   LoadingTitle = "Authenticating teamherowars41...",
+   LoadingSubtitle = "Map: Jawa Tengah",
+})
+
+local Tab = Window:CreateTab("Auto Farm", 4483362458)
+
+-- Global Settings (Atomicals Logic)
+_G.AutoFarm = false
+_G.Speed = 100
+_G.Height = 550
+_G.AutoTakeJob = true
+
+-- Lokasi Koordinat Akurat Jateng
+local Locations = {
+    NPC = CFrame.new(-1432.5, 28.2, 5120.7),
+    Shed = CFrame.new(-1515.2, 25.5, 5205.1)
+}
+
+Tab:CreateSection("Main Automation")
+
+Tab:CreateToggle({
+   Name = "Start Auto Farm (Jateng Route)",
+   CurrentValue = false,
+   Callback = function(Value)
+      _G.AutoFarm = Value
+      
+      if Value then
+         local lp = game.Players.LocalPlayer
+         local char = lp.Character
+         
+         -- 1. INSTA-JOB (Teleport & Fire Remote)
+         char.HumanoidRootPart.CFrame = Locations.NPC
+         task.wait(0.5)
+         
+         if _G.AutoTakeJob then
+            pcall(function()
+               -- Mencoba Remote yang sama dengan Atomicals
+               game:GetService("ReplicatedStorage").RemoteEvents.JobEvent:FireServer("StartJob", "Trucker", 1)
+            end)
+            Rayfield:Notify({Title = "Atomicals", Content = "Route Successfully Selected!"})
+         end
+         
+         -- 2. TELEPORT TO SPAWN
+         task.wait(0.5)
+         char.HumanoidRootPart.CFrame = Locations.Shed
+         Rayfield:Notify({Title = "Atomicals", Content = "Please Spawn White Truck."})
+         
+         -- 3. ATOMICALS FLY ENGINE (SMOOTH LERP)
+         while _G.AutoFarm do
+            task.wait()
+            pcall(function()
+               local veh = char.Humanoid.SeatPart.Parent
+               local waypoint = workspace:FindFirstChild("JobWaypoint", true) or workspace:FindFirstChild("Waypoint", true)
+               
+               if veh and waypoint then
+                  local root = veh.PrimaryPart
+                  local targetPos = waypoint.Position + Vector3.new(0, _G.Height, 0)
+                  
+                  -- Metode Lerp: Ini yang bikin terbangnya mulus
+                  root.CFrame = root.CFrame:Lerp(CFrame.new(root.Position, targetPos) * CFrame.new(0, 0, -_G.Speed/10), 0.1)
+                  
+                  -- Anti-Gravity Force
+                  if not root:FindFirstChild("AtomForce") then
+                     local bf = Instance.new("BodyForce", root)
+                     bf.Name = "AtomForce"
+                     bf.Force = Vector3.new(0, workspace.Gravity * root:GetMass(), 0)
+                  end
+                  
+                  -- Auto Landing
+                  local dist = (root.Position - targetPos).Magnitude
+                  if dist < 80 then
+                     if root:FindFirstChild("AtomForce") then root.AtomForce:Destroy() end
+                     root.CFrame = CFrame.new(waypoint.Position)
+                     _G.AutoFarm = false
+                     Rayfield:Notify({Title = "Success", Content = "Delivery Completed!"})
+                  end
+               end
+            end)
+         end
+      end
+   end,
+})
+
+Tab:CreateSection("Customization")
+
+Tab:CreateSlider({
+   Name = "Speed (Atom Speed)",
+   Range = {50, 300},
+   Increment = 10,
+   CurrentValue = 100,
+   Callback = function(v) _G.Speed = v end,
+})
+
+Tab:CreateSlider({
+   Name = "Fly Height",
+   Range = {300, 1000},
+   Increment = 50,
+   CurrentValue = 550,
+   Callback = function(v) _G.Height = v end,
+})
+
+Tab:CreateSection("Extra")
+Tab:CreateButton({
+   Name = "Anti-Afk (Stable)",
+   Callback = function()
+      local vu = game:GetService("VirtualUser")
+      game.Players.LocalPlayer.Idled:Connect(function()
+         vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+         wait(1)
+         vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+      end)
+   end,
+})
