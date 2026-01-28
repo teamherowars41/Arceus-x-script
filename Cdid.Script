@@ -1,98 +1,128 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "ATOMICALS HUB | CDID JATENG REPLICA",
-   LoadingTitle = "Authenticating teamherowars41...",
-   LoadingSubtitle = "Map: Jawa Tengah",
+   Name = "ATOMICALS HUB | TRUCK FLY REPLICA",
+   LoadingTitle = "Menghubungkan ke CDID Jateng...",
+   LoadingSubtitle = "by teamherowars41",
 })
 
 local Tab = Window:CreateTab("Auto Farm", 4483362458)
 
--- Global Settings (Atomicals Logic)
-_G.AutoFarm = false
-_G.Speed = 100
-_G.Height = 550
-_G.AutoTakeJob = true
+-- Pengaturan Global
+_G.AutoFly = false
+_G.FlySpeed = 100
+_G.FlyHeight = 550
+local StartMoney = game.Players.LocalPlayer.leaderstats.Money.Value
 
--- Lokasi Koordinat Akurat Jateng
-local Locations = {
-    NPC = CFrame.new(-1432.5, 28.2, 5120.7),
-    Shed = CFrame.new(-1515.2, 25.5, 5205.1)
-}
+-- UI MONEY TRACKER (Atomicals Style)
+local function CreateMoneyTracker()
+    if game.CoreGui:FindFirstChild("MoneyTracker") then game.CoreGui.MoneyTracker:Destroy() end
+    
+    local sg = Instance.new("ScreenGui", game.CoreGui)
+    sg.Name = "MoneyTracker"
+    
+    local frame = Instance.new("Frame", sg)
+    frame.Size = UDim2.new(0, 200, 0, 80)
+    frame.Position = UDim2.new(0.5, -100, 0, 50)
+    frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    frame.BorderSizePixel = 2
+    frame.Active = true
+    frame.Draggable = true -- Bisa digeser
+    
+    local title = Instance.new("TextLabel", frame)
+    title.Text = "ATOMICALS MONEY TRACKER"
+    title.Size = UDim2.new(1, 0, 0, 25)
+    title.TextColor3 = Color3.fromRGB(0, 255, 150)
+    title.BackgroundTransparency = 1
+    title.Font = Enum.Font.SourceSansBold
+    
+    local stats = Instance.new("TextLabel", frame)
+    stats.Name = "Stats"
+    stats.Text = "Earnings: Rp 0"
+    stats.Position = UDim2.new(0, 0, 0, 35)
+    stats.Size = UDim2.new(1, 0, 0, 40)
+    stats.TextColor3 = Color3.fromRGB(255, 255, 255)
+    stats.BackgroundTransparency = 1
+    stats.TextSize = 18
+    stats.Font = Enum.Font.Code
 
-Tab:CreateSection("Main Automation")
+    -- Update Money secara Real-Time
+    spawn(function()
+        while _G.AutoFly and task.wait(1) do
+            local currentMoney = game.Players.LocalPlayer.leaderstats.Money.Value
+            local earned = currentMoney - StartMoney
+            stats.Text = "Earnings: Rp " .. tostring(earned):reverse():gsub("%d%d%d", "%1."):reverse():gsub("^%.", "")
+        end
+        if not _G.AutoFly then sg:Destroy() end
+    end)
+end
+
+Tab:CreateSection("Automation")
 
 Tab:CreateToggle({
-   Name = "Start Auto Farm (Jateng Route)",
+   Name = "Start Auto Fly (Atomicals Move)",
    CurrentValue = false,
    Callback = function(Value)
-      _G.AutoFarm = Value
+      _G.AutoFly = Value
       
       if Value then
-         local lp = game.Players.LocalPlayer
-         local char = lp.Character
-         
-         -- 1. INSTA-JOB (Teleport & Fire Remote)
-         char.HumanoidRootPart.CFrame = Locations.NPC
-         task.wait(0.5)
-         
-         if _G.AutoTakeJob then
-            pcall(function()
-               -- Mencoba Remote yang sama dengan Atomicals
-               game:GetService("ReplicatedStorage").RemoteEvents.JobEvent:FireServer("StartJob", "Trucker", 1)
-            end)
-            Rayfield:Notify({Title = "Atomicals", Content = "Route Successfully Selected!"})
-         end
-         
-         -- 2. TELEPORT TO SPAWN
-         task.wait(0.5)
-         char.HumanoidRootPart.CFrame = Locations.Shed
-         Rayfield:Notify({Title = "Atomicals", Content = "Please Spawn White Truck."})
-         
-         -- 3. ATOMICALS FLY ENGINE (SMOOTH LERP)
-         while _G.AutoFarm do
-            task.wait()
-            pcall(function()
-               local veh = char.Humanoid.SeatPart.Parent
-               local waypoint = workspace:FindFirstChild("JobWaypoint", true) or workspace:FindFirstChild("Waypoint", true)
-               
-               if veh and waypoint then
-                  local root = veh.PrimaryPart
-                  local targetPos = waypoint.Position + Vector3.new(0, _G.Height, 0)
-                  
-                  -- Metode Lerp: Ini yang bikin terbangnya mulus
-                  root.CFrame = root.CFrame:Lerp(CFrame.new(root.Position, targetPos) * CFrame.new(0, 0, -_G.Speed/10), 0.1)
-                  
-                  -- Anti-Gravity Force
-                  if not root:FindFirstChild("AtomForce") then
-                     local bf = Instance.new("BodyForce", root)
-                     bf.Name = "AtomForce"
-                     bf.Force = Vector3.new(0, workspace.Gravity * root:GetMass(), 0)
-                  end
-                  
-                  -- Auto Landing
-                  local dist = (root.Position - targetPos).Magnitude
-                  if dist < 80 then
-                     if root:FindFirstChild("AtomForce") then root.AtomForce:Destroy() end
-                     root.CFrame = CFrame.new(waypoint.Position)
-                     _G.AutoFarm = false
-                     Rayfield:Notify({Title = "Success", Content = "Delivery Completed!"})
-                  end
+         StartMoney = game.Players.LocalPlayer.leaderstats.Money.Value -- Reset hitungan saat start
+         CreateMoneyTracker()
+         Rayfield:Notify({Title = "Sistem", Content = "Duduk di Truk untuk Terbang!"})
+      end
+
+      while _G.AutoFly do
+         task.wait()
+         pcall(function()
+            local lp = game.Players.LocalPlayer
+            local char = lp.Character
+            local veh = char.Humanoid.SeatPart.Parent
+            
+            -- Mencari Waypoint (Cek Descendants workspace agar akurat)
+            local waypoint = nil
+            for _, v in pairs(workspace:GetDescendants()) do
+               if (v.Name == "JobWaypoint" or v.Name == "Waypoint") and v:IsA("BasePart") then
+                  waypoint = v
+                  break
                end
-            end)
-         end
+            end
+
+            if veh and waypoint then
+               local root = veh.PrimaryPart
+               local targetPos = waypoint.Position + Vector3.new(0, _G.FlyHeight, 0)
+               
+               -- ATOMICALS FLY ENGINE (SMOOTH LERP)
+               -- Menggunakan Lerp untuk pergerakan halus tanpa patah-patah
+               root.CFrame = root.CFrame:Lerp(CFrame.new(root.Position, targetPos) * CFrame.new(0, 0, -_G.FlySpeed/10), 0.12)
+               
+               -- Anti-Gravity Force (Mencegah Truk Jatuh/Masuk Tanah)
+               if not root:FindFirstChild("FlightForce") then
+                  local bf = Instance.new("BodyForce", root)
+                  bf.Name = "FlightForce"
+                  bf.Force = Vector3.new(0, workspace.Gravity * root:GetMass(), 0)
+               end
+
+               -- Landing System
+               local dist = (Vector2.new(root.Position.X, root.Position.Z) - Vector2.new(waypoint.Position.X, waypoint.Position.Z)).Magnitude
+               if dist < 75 then
+                  if root:FindFirstChild("FlightForce") then root.FlightForce:Destroy() end
+                  root.CFrame = CFrame.new(waypoint.Position + Vector3.new(0, 2, 0))
+                  task.wait(1.5) -- Tunggu gaji masuk
+               end
+            end
+         end)
       end
    end,
 })
 
-Tab:CreateSection("Customization")
+Tab:CreateSection("Settings")
 
 Tab:CreateSlider({
-   Name = "Speed (Atom Speed)",
-   Range = {50, 300},
+   Name = "Fly Speed",
+   Range = {50, 250},
    Increment = 10,
    CurrentValue = 100,
-   Callback = function(v) _G.Speed = v end,
+   Callback = function(v) _G.FlySpeed = v end,
 })
 
 Tab:CreateSlider({
@@ -100,10 +130,8 @@ Tab:CreateSlider({
    Range = {300, 1000},
    Increment = 50,
    CurrentValue = 550,
-   Callback = function(v) _G.Height = v end,
+   Callback = function(v) _G.FlyHeight = v end,
 })
-
-Tab:CreateSection("Extra")
 Tab:CreateButton({
    Name = "Anti-Afk (Stable)",
    Callback = function()
