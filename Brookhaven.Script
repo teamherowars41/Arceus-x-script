@@ -1,78 +1,67 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "teamherowars41 Hub | FE TROLL",
-   LoadingTitle = "Fixing Callback Errors...",
+   Name = "teamherowars41 | FE LOUD BYPASS",
+   LoadingTitle = "Menghubungkan ke Remote Server...",
    LoadingSubtitle = "by teamherowars41",
 })
 
-local Tab = Window:CreateTab("Brookhaven FE", 4483362458)
+local Tab = Window:CreateTab("Audio Server", 4483362458)
 
--- Fungsi Helper untuk Remote Brookhaven (Mencegah Error)
-local function UpdateBrookhaven(prop, value)
+-- FUNGSI UTAMA BYPASS (FE)
+local function PlayFE(audioId)
+    local finalId = "rbxassetid://" .. tostring(audioId):gsub("rbxassetid://", "")
+    
     pcall(function()
-        game:GetService("ReplicatedStorage").RemoteEvents.PropUpdate:FireServer("UpdateProp", prop, value)
+        -- Trigger Remote Brookhaven
+        game:GetService("ReplicatedStorage").RemoteEvents.PropUpdate:FireServer("UpdateProp", "MusicID", finalId)
     end)
+    
+    Rayfield:Notify({
+        Title = "Audio Sent",
+        Content = "ID: " .. audioId .. " berhasil dikirim ke server!",
+        Duration = 3
+    })
 end
 
--- 1. FE SIZE
-Tab:CreateButton({
-   Name = "Jadi Raksasa (FE)",
-   Callback = function()
-      UpdateBrookhaven("Size", 2.0)
-   end,
-})
+Tab:CreateSection("Custom Music (Input ID)")
 
-Tab:CreateButton({
-   Name = "Jadi Kurcaci (FE)",
-   Callback = function()
-      UpdateBrookhaven("Size", 0.3)
-   end,
-})
-
--- 2. FE SPEED
-Tab:CreateSlider({
-   Name = "Kecepatan Jalan",
-   Range = {16, 150},
-   Increment = 1,
-   CurrentValue = 16,
-   Callback = function(Value)
-      pcall(function()
-          game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
-      end)
-   end,
-})
-
--- 3. FE MUSIC (SCARY)
 Tab:CreateInput({
-   Name = "Play Music ID (Loud)",
-   PlaceholderText = "ID Suara...",
+   Name = "Input Custom ID",
+   PlaceholderText = "Masukkan ID Musik...",
+   RemoveTextAfterFocusLost = false,
    Callback = function(Text)
-      UpdateBrookhaven("MusicID", "rbxassetid://"..tostring(Text))
+      if Text ~= "" then PlayFE(Text) end
    end,
 })
 
--- 4. FE DIVINE LIGHT (VEHICLE)
-Tab:CreateToggle({
-   Name = "Mobil Cahaya Ilahi (FE)",
-   CurrentValue = false,
-   Callback = function(Value)
-      _G.FE_Divine = Value
-      while _G.FE_Divine do
-         pcall(function()
-            local char = game.Players.LocalPlayer.Character
-            local veh = char.Humanoid.SeatPart.Parent
-            if veh then
-               for _, light in pairs(veh:GetDescendants()) do
-                  if light:IsA("Light") then
-                     light.Brightness = 1000
-                     light.Range = 300
-                     light.Enabled = true
-                  end
-               end
-            end
-         end)
-         task.wait(0.5)
-      end
+Tab:CreateSection("Koleksi Suara Seram (FE)")
+
+-- DAFTAR 5 SUARA SERAM PILIHAN
+local sounds = {
+    {Name = "666 Ghost Scream (Loud)", ID = "1131102559"},
+    {Name = "Kuntilanak Ketawa", ID = "1331256377"},
+    {Name = "Siren Head Echo", ID = "5133642341"},
+    {Name = "Whisper from Hell", ID = "145402035"},
+    {Name = "Jumpscare Sound", ID = "6822216440"}
+}
+
+for _, s in pairs(sounds) do
+    Tab:CreateButton({
+        Name = s.Name,
+        Callback = function()
+            PlayFE(s.ID)
+        end,
+    })
+end
+
+Tab:CreateSection("Controls")
+
+Tab:CreateButton({
+   Name = "Hentikan Suara (Stop)",
+   Callback = function()
+      PlayFE("0")
    end,
 })
+
+Tab:CreateLabel("INFO: Wajib Duduk di Mobil agar terdengar 1 Server!")
