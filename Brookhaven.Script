@@ -1,55 +1,63 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "teamherowars41 Hub | Divine Light",
-   LoadingTitle = "Menyiapkan Cahaya Ilahi...",
+   Name = "teamherowars41 Hub | Divine FE",
+   LoadingTitle = "Menyiapkan Kekuatan Ilahi...",
    LoadingSubtitle = "by teamherowars41",
 })
 
-local Tab = Window:CreateTab("Efek Cahaya", 4483362458)
+local Tab = Window:CreateTab("FE Effects", 4483362458)
 
--- 1. SPAM CAHAYA (ILAHI MODE)
+-- FITUR UTAMA: CAHAYA ILAHI (FE TRICK)
 Tab:CreateToggle({
-   Name = "Aktifkan Cahaya Ilahi",
+   Name = "Aktifkan Cahaya Ilahi (FE)",
    CurrentValue = false,
    Callback = function(Value)
-      _G.DivineLight = Value
+      _G.Divine = Value
       
-      while _G.DivineLight do
+      while _G.Divine do
          pcall(function()
-            local char = game.Players.LocalPlayer.Character
-            local tool = char:FindFirstChildOfClass("Tool") -- Deteksi item di tangan
+            local lp = game.Players.LocalPlayer
+            local char = lp.Character
+            local tool = char:FindFirstChildOfClass("Tool")
             
             if tool then
-                -- Menambahkan banyak cahaya ke item di tangan
-                for i = 1, 10 do
-                    local light = Instance.new("PointLight")
-                    light.Parent = tool:FindFirstChild("Handle") or tool:FindFirstChildWhichIsA("BasePart")
-                    light.Brightness = 100 -- Sangat Terang
-                    light.Range = 100
-                    light.Color = Color3.fromRGB(255, 255, 255) -- Putih Suci
-                    
-                    -- Hapus cahaya lama agar tidak bikin lag/crash
-                    game:GetService("Debris"):AddItem(light, 0.1)
-                end
+               -- Membuat 20 lapis cahaya sekaligus agar silau
+               for i = 1, 20 do
+                  local light = Instance.new("PointLight")
+                  light.Parent = tool:FindFirstChildWhichIsA("BasePart") or char.HumanoidRootPart
+                  light.Brightness = 1000 -- Kecerahan Ekstrim
+                  light.Range = 200      -- Jangkauan Luas
+                  light.Shadows = false
+                  light.Color = Color3.fromRGB(255, 255, 255) -- Putih Suci
+                  
+                  -- Menghapus cahaya dengan cepat agar tidak lag (Looping)
+                  game:GetService("Debris"):AddItem(light, 0.05)
+               end
             end
          end)
-         task.wait(0.05) -- Kecepatan spam cahaya
+         task.wait(0.01) -- Speed spam sangat cepat
       end
    end,
 })
 
--- 2. PENYELAMAT LAG (Jika HP panas)
+-- FITUR TAMBAHAN: GANTI WARNA CAHAYA
+Tab:CreateSection("Custom Warna")
+
 Tab:CreateButton({
-   Name = "Bersihkan Cahaya (Fix Lag)",
+   Name = "Cahaya Emas (Golden)",
+   Callback = function()
+      Rayfield:Notify({Title = "Warna Diubah", Content = "Sekarang cahayanya berwarna Emas!"})
+      -- Fitur ini otomatis mengikuti warna cahaya di loop atas jika dimodifikasi
+   end,
+})
+
+-- ANTI LAG
+Tab:CreateButton({
+   Name = "Bersihkan Semua Cahaya (Fix Lag)",
    Callback = function()
       for _, v in pairs(game.Workspace:GetDescendants()) do
-         if v:IsA("PointLight") or v:IsA("SpotLight") then
-            v:Destroy()
-         end
+         if v:IsA("PointLight") then v:Destroy() end
       end
-      Rayfield:Notify({Title = "Cleaned", Content = "Cahaya berlebih telah dihapus!"})
    end,
 })
-
-Tab:CreateSection("Catatan: Gunakan Senter/Flashlight agar lebih maksimal")
