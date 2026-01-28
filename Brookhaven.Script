@@ -1,63 +1,89 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "teamherowars41 Hub | Divine FE",
-   LoadingTitle = "Menyiapkan Kekuatan Ilahi...",
+   Name = "teamherowars41 | FE BROOKHAVEN ALL-IN-ONE",
+   LoadingTitle = "Menghapus Fitur Non-FE...",
    LoadingSubtitle = "by teamherowars41",
 })
 
-local Tab = Window:CreateTab("FE Effects", 4483362458)
+local Tab = Window:CreateTab("FE Menu", 4483362458)
 
--- FITUR UTAMA: CAHAYA ILAHI (FE TRICK)
+-- 1. FE SIZE CHANGER (Menjadi Raksasa atau Kurcaci)
+Tab:CreateSection("Karakter (FE)")
+Tab:CreateButton({
+   Name = "Jadi Raksasa (FE)",
+   Callback = function()
+      game:GetService("ReplicatedStorage").RemoteEvents.PropUpdate:FireServer("UpdateProp", "Size", 2.0)
+      Rayfield:Notify({Title = "Berhasil", Content = "Semua orang melihatmu menjadi besar!"})
+   end,
+})
+
+Tab:CreateButton({
+   Name = "Jadi Kurcaci (FE)",
+   Callback = function()
+      game:GetService("ReplicatedStorage").RemoteEvents.PropUpdate:FireServer("UpdateProp", "Size", 0.5)
+   end,
+})
+
+-- 2. FE SPEED BYPASS (Terlihat orang lain lari kencang)
+Tab:CreateSlider({
+   Name = "Kecepatan Jalan (FE)",
+   Range = {16, 100},
+   Increment = 1,
+   CurrentValue = 16,
+   Callback = function(Value)
+      game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+   end,
+})
+
+-- 3. FE SCARY AUDIO (Satu server dengar)
+Tab:CreateSection("Suara & Musik (FE)")
+Tab:CreateInput({
+   Name = "Play Music ID (Loud)",
+   PlaceholderText = "Masukkan ID Suara...",
+   Callback = function(Text)
+      game:GetService("ReplicatedStorage").RemoteEvents.PropUpdate:FireServer("UpdateProp", "MusicID", "rbxassetid://"..Text)
+   end,
+})
+
+-- 4. FE VEHICLE LIGHTS (Cahaya Ilahi Mobil - Paling Silau)
+Tab:CreateSection("Kendaraan (FE)")
 Tab:CreateToggle({
-   Name = "Aktifkan Cahaya Ilahi (FE)",
+   Name = "Mobil Cahaya Ilahi (FE)",
    CurrentValue = false,
    Callback = function(Value)
-      _G.Divine = Value
-      
-      while _G.Divine do
+      _G.FE_Lights = Value
+      while _G.FE_Lights do
          pcall(function()
-            local lp = game.Players.LocalPlayer
-            local char = lp.Character
-            local tool = char:FindFirstChildOfClass("Tool")
-            
-            if tool then
-               -- Membuat 20 lapis cahaya sekaligus agar silau
-               for i = 1, 20 do
-                  local light = Instance.new("PointLight")
-                  light.Parent = tool:FindFirstChildWhichIsA("BasePart") or char.HumanoidRootPart
-                  light.Brightness = 1000 -- Kecerahan Ekstrim
-                  light.Range = 200      -- Jangkauan Luas
-                  light.Shadows = false
-                  light.Color = Color3.fromRGB(255, 255, 255) -- Putih Suci
-                  
-                  -- Menghapus cahaya dengan cepat agar tidak lag (Looping)
-                  game:GetService("Debris"):AddItem(light, 0.05)
+            local veh = game.Players.LocalPlayer.Character.Humanoid.SeatPart.Parent
+            for _, light in pairs(veh:GetDescendants()) do
+               if light:IsA("Light") then
+                  light.Brightness = 500
+                  light.Range = 200
+                  light.Enabled = true
                end
             end
          end)
-         task.wait(0.01) -- Speed spam sangat cepat
+         task.wait(0.5)
       end
    end,
 })
 
--- FITUR TAMBAHAN: GANTI WARNA CAHAYA
-Tab:CreateSection("Custom Warna")
-
-Tab:CreateButton({
-   Name = "Cahaya Emas (Golden)",
-   Callback = function()
-      Rayfield:Notify({Title = "Warna Diubah", Content = "Sekarang cahayanya berwarna Emas!"})
-      -- Fitur ini otomatis mengikuti warna cahaya di loop atas jika dimodifikasi
+-- 5. FE TROLL NAMES (Ganti Bio secara otomatis)
+Tab:CreateSection("Troll (FE)")
+Tab:CreateInput({
+   Name = "Ganti Bio/Nama (FE)",
+   PlaceholderText = "Ketik sesuatu...",
+   Callback = function(Text)
+      game:GetService("ReplicatedStorage").RemoteEvents.PropUpdate:FireServer("UpdateProp", "Bio", Text)
    end,
 })
 
--- ANTI LAG
+-- 6. FE TELEPORT (Ke Rumah Orang)
 Tab:CreateButton({
-   Name = "Bersihkan Semua Cahaya (Fix Lag)",
+   Name = "Teleport ke Rumah 1",
    Callback = function()
-      for _, v in pairs(game.Workspace:GetDescendants()) do
-         if v:IsA("PointLight") then v:Destroy() end
-      end
+      -- Teleport koordinat rumah (FE karena karaktermu berpindah posisi di server)
+      game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-380, 20, 350)
    end,
 })
